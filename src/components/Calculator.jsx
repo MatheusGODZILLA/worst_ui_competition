@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getSarcaticMessage, showSystemAlert } from './sarcasticInteractions'; 
 
 const randomizeArray = (arr) => arr.sort(() => Math.random() - 0.5); // Embaralhar array para mudar a ordem dos botões
 
@@ -43,9 +44,8 @@ const Calculator = () => {
         } else if (text === '=') {
             if (previousValue && currentOperator) {
                 const errorChance = Math.random();
-                if (errorChance < 0.2) { // 20% chance de erro
+                if (errorChance < 0.4) { // 40% chance de erro
                     setShowingError(true);
-                    setDisplayValue('Error');
                     setOperationText('');
                 } else {
                     setTimeout(() => {
@@ -54,6 +54,7 @@ const Calculator = () => {
                         setCurrentOperator('');
                         setOperationText('');
                         setShouldClearDisplay(true);
+                        showSystemAlert(getSarcaticMessage()); // Sempre mostrar uma mensagem sarcástica após o resultado
                     }, Math.random() * 3000); // Delay aleatório entre 0-3 segundos
                 }
             }
