@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const randomizeArray = (arr) => arr.sort(() => Math.random() - 0.5); // Embaralhar array para mudar a ordem dos botões
 
 const Calculator = () => {
     const [displayValue, setDisplayValue] = useState('0');
@@ -6,8 +8,22 @@ const Calculator = () => {
     const [previousValue, setPreviousValue] = useState('');
     const [shouldClearDisplay, setShouldClearDisplay] = useState(false);
     const [operationText, setOperationText] = useState('');
+    const [buttons, setButtons] = useState([
+        'C', '←', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'
+    ]);
+    const [showingError, setShowingError] = useState(false);
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setButtons(prevButtons => [...randomizeArray(prevButtons)]);
+        }, 3000); // Mudar a ordem dos botões a cada 3 segundos
+
+        return () => clearInterval(intervalId);
+    }, []);
 
     const handleButtonClick = (text) => {
+        if (showingError && text !== 'C') return;
+
         if (text >= '0' && text <= '9' || text === '.') {
             if (shouldClearDisplay) {
                 setDisplayValue(text === '.' ? '0.' : text);
@@ -21,15 +37,25 @@ const Calculator = () => {
             setCurrentOperator('');
             setPreviousValue('');
             setOperationText('');
+            setShowingError(false); // Resetar estado de erro
         } else if (text === '←') {
             setDisplayValue(displayValue.length > 1 ? displayValue.slice(0, -1) : '0');
         } else if (text === '=') {
             if (previousValue && currentOperator) {
-                setDisplayValue(calculate(previousValue, displayValue, currentOperator));
-                setPreviousValue('');
-                setCurrentOperator('');
-                setOperationText(`${previousValue} ${currentOperator} ${displayValue} =`);
-                setShouldClearDisplay(true);
+                const errorChance = Math.random();
+                if (errorChance < 0.2) { // 20% chance de erro
+                    setShowingError(true);
+                    setDisplayValue('Error');
+                    setOperationText('');
+                } else {
+                    setTimeout(() => {
+                        setDisplayValue(generateRandomResult());
+                        setPreviousValue('');
+                        setCurrentOperator('');
+                        setOperationText('');
+                        setShouldClearDisplay(true);
+                    }, Math.random() * 3000); // Delay aleatório entre 0-3 segundos
+                }
             }
         } else { // Operadores
             if (displayValue) {
@@ -42,25 +68,13 @@ const Calculator = () => {
         }
     };
 
-    const calculate = (value1, value2, operator) => {
-        const num1 = parseFloat(value1);
-        const num2 = parseFloat(value2);
-        switch (operator) {
-            case '+':
-                return (num1 + num2).toString();
-            case '-':
-                return (num1 - num2).toString();
-            case '*':
-                return (num1 * num2).toString();
-            case '/':
-                return num2 !== 0 ? (num1 / num2).toString() : 'Erro';
-            default:
-                return num2.toString();
-        }
+    const generateRandomResult = () => {
+        const randomResult = Math.floor(Math.random() * 100);
+        return randomResult.toString();
     };
 
     return (
-        <div className="bg-gray-800 text-white max-w-xs mx-auto p-4 rounded-lg shadow-lg">
+        <div className="bg-gray-800 text-white max-w-xs mx-auto p-4 rounded-lg shadow-lg aspect-square">
             <div className="bg-gray-900 p-4 rounded-md mb-4 flex flex-col justify-end h-24">
                 <div className="text-left text-xs text-gray-400 mb-1" style={{ height: '1.5rem' }}>
                     {operationText}
@@ -69,32 +83,35 @@ const Calculator = () => {
                     {displayValue}
                 </div>
             </div>
-            <div className="grid grid-cols-4 gap-2">
-                <button className="bg-gray-700 p-4 rounded hover:bg-gray-600 hover:scale-105 transition-transform" onClick={() => handleButtonClick('C')}>C</button>
-                <button className="bg-gray-700 p-4 rounded hover:bg-gray-600 hover:scale-105 transition-transform" onClick={() => handleButtonClick('←')}>←</button>
-                <button className="bg-gray-700 p-4 rounded hover:bg-gray-600 hover:scale-105 transition-transform" onClick={() => handleButtonClick('/')}>/</button>
-                <button className="bg-gray-700 p-4 rounded hover:bg-gray-600 hover:scale-105 transition-transform" onClick={() => handleButtonClick('*')}>*</button>
-                
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('7')}>7</button>
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('8')}>8</button>
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('9')}>9</button>
-                <button className="bg-gray-700 p-4 rounded hover:bg-gray-600 hover:scale-105 transition-transform" onClick={() => handleButtonClick('-')}>-</button>
-                
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('4')}>4</button>
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('5')}>5</button>
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('6')}>6</button>
-                <button className="bg-gray-700 p-4 rounded hover:bg-gray-600 hover:scale-105 transition-transform" onClick={() => handleButtonClick('+')}>+</button>
-                
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('1')}>1</button>
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('2')}>2</button>
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('3')}>3</button>
-                <button className="bg-red-600 p-4 rounded col-span-1 row-span-2 hover:bg-red-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('=')}>=</button>
-                
-                <button className="bg-gray-600 p-4 col-span-2 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('0')}>0</button>
-                <button className="bg-gray-600 p-4 rounded hover:bg-gray-500 hover:scale-105 transition-transform" onClick={() => handleButtonClick('.')}>.</button>
+            <div className="grid grid-cols-4 grid-rows-5 gap-2 h-80">
+                {buttons.map((btn) => (
+                    <button
+                        key={btn}
+                        className={`p-4 rounded transition-transform duration-300 ease-in-out ${getButtonStyles(btn)}`}
+                        onClick={() => handleButtonClick(btn)}
+                    >
+                        {btn}
+                    </button>
+                ))}
             </div>
         </div>
     );
-}
+};
+
+const getButtonStyles = (btn) => {
+    const buttonStyles = {
+        'C': 'bg-green-700 font-bold hover:bg-green-600',
+        '←': 'bg-gray-700 hover:bg-gray-600',
+        '/': 'bg-gray-700 hover:bg-gray-600',
+        '*': 'bg-gray-700 hover:bg-gray-600',
+        '-': 'bg-gray-700 hover:bg-gray-600',
+        '+': 'bg-gray-700 hover:bg-gray-600',
+        '=': 'bg-red-600 font-bold hover:bg-red-500 col-span-1 row-span-2',
+        '0': 'bg-gray-600 col-span-2 hover:bg-gray-500',
+        '.': 'bg-gray-600 hover:bg-gray-500',
+    };
+
+    return buttonStyles[btn] || 'bg-gray-600 hover:bg-gray-500';
+};
 
 export default Calculator;
