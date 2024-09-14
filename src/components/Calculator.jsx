@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getSarcaticMessage } from './sarcasticInteractions'; 
+import { getSarcaticMessage } from './SarcasticInteractions'; 
 
 const randomizeArray = (arr) => arr.sort(() => Math.random() - 0.5); // Embaralhar array para mudar a ordem dos botões
 
