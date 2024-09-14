@@ -72,8 +72,8 @@ const Calculator = () => {
     };
 
     return (
-        <div className="flex">
-            <div className="bg-gray-800 text-white max-w-xs p-4 rounded-lg shadow-lg aspect-square flex flex-col">
+        <div className="flex flex-col md:flex-row gap-4 p-4">
+            <div className="bg-gray-800 text-white max-w-xs p-4 rounded-lg shadow-lg flex flex-col">
                 <div className="bg-gray-900 p-4 rounded-md mb-4 flex flex-col justify-end h-24">
                     <div className="text-left text-xs text-gray-400 mb-1" style={{ height: '1.5rem' }}>
                         {operationText}
@@ -82,7 +82,7 @@ const Calculator = () => {
                         {displayValue}
                     </div>
                 </div>
-                <div className="grid grid-cols-4 grid-rows-5 gap-2 h-80">
+                <div className="grid grid-cols-4 gap-2">
                     {buttons.map((btn) => (
                         <button
                             key={btn}
@@ -94,7 +94,7 @@ const Calculator = () => {
                     ))}
                 </div>
             </div>
-            <div className="bg-gray-700 text-gray-300 p-4 rounded-lg ml-4 w-72">
+            <div className="bg-gray-700 text-gray-300 p-4 rounded-lg w-full md:w-72 flex-shrink-0">
                 <div className="text-lg font-bold mb-2">Logs de Erro</div>
                 <div className="max-h-96 overflow-y-auto">
                     {errorLogs.map((log, index) => (
