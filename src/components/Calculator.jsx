@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getSarcaticMessage, showSystemAlert } from './sarcasticInteractions'; 
+import { getSarcaticMessage } from './sarcasticInteractions'; 
 
 const randomizeArray = (arr) => arr.sort(() => Math.random() - 0.5); // Embaralhar array para mudar a ordem dos botões
 
@@ -12,7 +12,7 @@ const Calculator = () => {
     const [buttons, setButtons] = useState([
         'C', '←', '/', '*', '7', '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '=', '0', '.'
     ]);
-    const [showingError, setShowingError] = useState(false);
+    const [errorLogs, setErrorLogs] = useState([]); // Estado para logs de erro
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -23,8 +23,6 @@ const Calculator = () => {
     }, []);
 
     const handleButtonClick = (text) => {
-        if (showingError && text !== 'C') return;
-
         if (text >= '0' && text <= '9' || text === '.') {
             if (shouldClearDisplay) {
                 setDisplayValue(text === '.' ? '0.' : text);
@@ -38,15 +36,14 @@ const Calculator = () => {
             setCurrentOperator('');
             setPreviousValue('');
             setOperationText('');
-            setShowingError(false); // Resetar estado de erro
         } else if (text === '←') {
             setDisplayValue(displayValue.length > 1 ? displayValue.slice(0, -1) : '0');
         } else if (text === '=') {
             if (previousValue && currentOperator) {
                 const errorChance = Math.random();
                 if (errorChance < 0.4) { // 40% chance de erro
-                    setShowingError(true);
-                    setOperationText('');
+                    setErrorLogs(prevLogs => [...prevLogs, getSarcaticMessage()]); // Adiciona mensagem sarcástica ao log
+                    setOperationText(''); // Limpa texto da operação
                 } else {
                     setTimeout(() => {
                         setDisplayValue(generateRandomResult());
@@ -54,7 +51,7 @@ const Calculator = () => {
                         setCurrentOperator('');
                         setOperationText('');
                         setShouldClearDisplay(true);
-                        showSystemAlert(getSarcaticMessage()); // Sempre mostrar uma mensagem sarcástica após o resultado
+                        setErrorLogs(prevLogs => [...prevLogs, getSarcaticMessage()]);
                     }, Math.random() * 3000); // Delay aleatório entre 0-3 segundos
                 }
             }
@@ -75,25 +72,37 @@ const Calculator = () => {
     };
 
     return (
-        <div className="bg-gray-800 text-white max-w-xs mx-auto p-4 rounded-lg shadow-lg aspect-square">
-            <div className="bg-gray-900 p-4 rounded-md mb-4 flex flex-col justify-end h-24">
-                <div className="text-left text-xs text-gray-400 mb-1" style={{ height: '1.5rem' }}>
-                    {operationText}
+        <div className="flex">
+            <div className="bg-gray-800 text-white max-w-xs p-4 rounded-lg shadow-lg aspect-square flex flex-col">
+                <div className="bg-gray-900 p-4 rounded-md mb-4 flex flex-col justify-end h-24">
+                    <div className="text-left text-xs text-gray-400 mb-1" style={{ height: '1.5rem' }}>
+                        {operationText}
+                    </div>
+                    <div className="text-right text-4xl" style={{ height: '3rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'right' }}>
+                        {displayValue}
+                    </div>
                 </div>
-                <div className="text-right text-4xl" style={{ height: '3rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'right' }}>
-                    {displayValue}
+                <div className="grid grid-cols-4 grid-rows-5 gap-2 h-80">
+                    {buttons.map((btn) => (
+                        <button
+                            key={btn}
+                            className={`p-4 rounded transition-transform duration-300 ease-in-out ${getButtonStyles(btn)}`}
+                            onClick={() => handleButtonClick(btn)}
+                        >
+                            {btn}
+                        </button>
+                    ))}
                 </div>
             </div>
-            <div className="grid grid-cols-4 grid-rows-5 gap-2 h-80">
-                {buttons.map((btn) => (
-                    <button
-                        key={btn}
-                        className={`p-4 rounded transition-transform duration-300 ease-in-out ${getButtonStyles(btn)}`}
-                        onClick={() => handleButtonClick(btn)}
-                    >
-                        {btn}
-                    </button>
-                ))}
+            <div className="bg-gray-700 text-gray-300 p-4 rounded-lg ml-4 w-72">
+                <div className="text-lg font-bold mb-2">Logs de Erro</div>
+                <div className="max-h-96 overflow-y-auto">
+                    {errorLogs.map((log, index) => (
+                        <div key={index} className="mb-2 p-2 bg-gray-600 rounded">
+                            {log}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
